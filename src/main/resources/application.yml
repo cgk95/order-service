@@ -1,0 +1,41 @@
+server:
+  shutdown: graceful
+  port: 9002
+  netty:
+    connection-timeout: 2s
+    idle-timeout: 15s # 데이터가 전송되지 않는 경우 TCP 연결을 닫기 전에 기다리는 시간
+
+spring:
+  application:
+    name: order-service
+  lifecycle:
+    timeout-per-shutdown-phase: 15s
+  r2dbc:
+    username: user
+    password: password
+    url: r2dbc:postgresql://localhost:5441/polardb_order
+    pool:
+      max-create-connection-time: 2s # 풀에서 연결 객체 하나를 얻을 때까지 기다릴 수 있는 최대한의 시간
+      initial-size: 5 # 풀의 초기 크기
+      max-size: 5 # 풀의 최대 크기
+  flyway:
+    user: ${spring.r2dbc.username}
+    password: ${spring.r2dbc.password}
+    url: jdbc:postgresql://localhost:5441/polardb_order # 플라이 웨이가 r2dbc 설정을 통합하여 지원하지 않음 ㅠㅠ
+
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      uri: http://localhost:8888
+      request-connect-timeout: 30000
+      request-read-timeout: 5000
+      fail-fast: false
+      retry:
+        max-attempts: 6
+        initial-interval: 1000
+        max-interval: 2000
+        multiplier: 1.1
+
+polar:
+  catalog-service-uri: "http://localhost:9001"
