@@ -36,6 +36,27 @@ spring:
         initial-interval: 1000
         max-interval: 2000
         multiplier: 1.1
+    function:
+      definition: dispatchOrder
+    stream:
+      bindings:
+        dispatchOrder-in-0:
+          destination: order-dispatched
+          group: ${spring.application.name}
+        acceptOrder-out-0: # StreamBridge 에 의해 생성되고 관리되는 출력 바인딩
+          destination: order-accepted # 바인더를 래빗mq의 익스체인지에 연결할 대상의 브로커에서의 실제 이름
+      rabbit:
+        bindings:
+          acceptOrder-out-0:
+            producer:
+              transacted: true # acceptOrder-out-0 바인딩에 대한 트랜잭션을 활성화
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: user
+    password: password
+    connection-timeout: 5s
 
 polar:
   catalog-service-uri: "http://localhost:9001"
