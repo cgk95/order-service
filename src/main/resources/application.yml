@@ -22,6 +22,11 @@ spring:
     user: ${spring.r2dbc.username}
     password: ${spring.r2dbc.password}
     url: jdbc:postgresql://localhost:5441/polardb_order # 플라이 웨이가 r2dbc 설정을 통합하여 지원하지 않음 ㅠㅠ
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000/auth/realms/PolarBookshop
 
   config:
     import: "optional:configserver:"
