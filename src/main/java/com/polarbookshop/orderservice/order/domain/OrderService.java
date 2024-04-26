@@ -32,8 +32,8 @@ public class OrderService {
         this.streamBridge = streamBridge;
     }
 
-    public Flux<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public Flux<Order> getAllOrders(String userId) {
+        return orderRepository.findALlByCreatedBy(userId);
     }
 
 
@@ -44,19 +44,19 @@ public class OrderService {
     @Transactional // 메서드를 로컬 트랜잭션으로 실행한다
     public Mono<Order> submitOrder(String isbn, int quantity) {
         return bookClient.getBookByIsbn(isbn)
-                         .map(book -> buildAcceptedOrder(book, quantity))
-                         .defaultIfEmpty( // 책이 존재하지 않으면 주문을 거부한다
-                                 buildRejectedOrder(isbn, quantity)
-                         )
-                         .flatMap(orderRepository::save)
-                         .doOnNext(this::publishOrderAcceptedEvent); // 주문이 수락되면 이벤트를 발행한다
+                .map(book -> buildAcceptedOrder(book, quantity))
+                .defaultIfEmpty( // 책이 존재하지 않으면 주문을 거부한다
+                        buildRejectedOrder(isbn, quantity)
+                )
+                .flatMap(orderRepository::save)
+                .doOnNext(this::publishOrderAcceptedEvent); // 주문이 수락되면 이벤트를 발행한다
     }
 
     public Flux<Order> consumeOrderDispatchedEvent(Flux<OrderDispatchedMessage> flux) {
         return flux.flatMap(message ->
-                           orderRepository.findById(message.orderId()))
-                   .map(this::buildDispatchedOrder)
-                   .flatMap(orderRepository::save);
+                        orderRepository.findById(message.orderId()))
+                .map(this::buildDispatchedOrder)
+                .flatMap(orderRepository::save);
     }
 
     public Order buildDispatchedOrder(Order order) {
@@ -69,6 +69,8 @@ public class OrderService {
                 OrderStatus.DISPATCHED,
                 order.createdDate(),
                 order.lastModifiedDate(),
+                order.createdBy(),
+                order.lastModifiedBy(),
                 order.version()
         );
     }

@@ -81,7 +81,7 @@ package:
       uses: anchore/scan-action@v3
       id: scan
       with:
-        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+        image: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}"
         fail-build: false
         severity-cutoff: high
 
